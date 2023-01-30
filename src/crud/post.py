@@ -1,4 +1,5 @@
 from sqlalchemy.orm import Session
+from sqlalchemy import func
 
 from ..schemas import post
 from ..database import models
@@ -14,11 +15,19 @@ class SortOption(enum.Enum):
 
 def get_posts(
     db: Session,
-    sort_option: SortOption,
+    search_term: str = "",
+    sort_option: SortOption = SortOption.NEWEST,
     skip: int = 0,
     limit: int = 100,
 ):
     query = db.query(models.Post)
+
+    if search_term != "":
+        query = query.filter(
+            models.Post.__ts_vector__.op("@@")(
+                func.plainto_tsquery("english", search_term)
+            )
+        )
 
     if sort_option == SortOption.NEWEST:
         query = query.order_by(models.Post.time_created.desc())
@@ -27,7 +36,6 @@ def get_posts(
     elif sort_option == SortOption.MOST_COMMENT:
         query = query.order_by(models.Post.number_of_comments.desc())
 
-    print(query)
     return query.offset(skip).limit(limit).all()
 
 

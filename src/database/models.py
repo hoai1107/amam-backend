@@ -7,6 +7,11 @@ from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.sql import func
 from sqlalchemy.orm import relationship
 from sqlalchemy.ext.hybrid import hybrid_property
+from sqlalchemy.dialects.postgresql import TSVECTOR
+
+
+class TSVector(sa.types.TypeDecorator):
+    impl = TSVECTOR
 
 
 """
@@ -27,6 +32,15 @@ class Post(Base):
     author = relationship("User", back_populates="posts")
     comments = relationship("Comment", cascade="all, delete-orphan, delete")
     votes = relationship("PostVote", cascade="all, delete-orphan, delete")
+
+    __ts_vector__ = sa.Column(
+        TSVector(),
+        sa.Computed("to_tsvector('english', title || ' ' || content)", persisted=True),
+    )
+
+    __table_args__ = (
+        sa.Index("ix_post__ts_vector__", __ts_vector__, postgresql_using="gin"),
+    )
 
     @hybrid_property
     def like(self):

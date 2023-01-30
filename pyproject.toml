@@ -17,6 +17,8 @@ bcrypt = "^4.0.1"
 python-jose = {extras = ["cryptography"], version = "^3.3.0"}
 passlib = {extras = ["bcrypt"], version = "^1.7.4"}
 python-dotenv = "^0.21.1"
+essential-generators = "^1.0"
+requests = "^2.28.2"
 
 [build-system]
 requires = ["poetry-core"]
