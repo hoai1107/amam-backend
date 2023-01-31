@@ -95,6 +95,24 @@ class User(Base):
 
     posts = relationship("Post", cascade="all, delete", back_populates="author")
     comments = relationship("Comment", cascade="all, delete")
+    followers = relationship(
+        "User",
+        secondary="follow",
+        primaryjoin="User.id == Follow.followed_id",
+        secondaryjoin="User.id == Follow.following_id",
+        backref="followed",
+    )
+
+
+class Follow(Base):
+    __tablename__ = "follow"
+
+    following_id = sa.Column(
+        UUID(as_uuid=True), sa.ForeignKey("users.id"), primary_key=True
+    )
+    followed_id = sa.Column(
+        UUID(as_uuid=True), sa.ForeignKey("users.id"), primary_key=True
+    )
 
 
 """
